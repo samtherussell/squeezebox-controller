@@ -83,6 +83,8 @@ class SqueezeBoxController:
 
     Args:
       details: {"player": string, "command": string}
+         - player is the player's name
+         - command is one of commands.keys()
     """
     if "player" not in details:
       raise Exception("Player not specified")
@@ -105,7 +107,7 @@ class SqueezeBoxController:
     Args:
       details: {"player": string, "term": string, "type": string}
         - term is the string to search for
-        - type is the search mode; ie. track/album...
+        - type is the search mode: one of search_types.keys()
     """
     if "player" not in details:
       raise Exception("Player not specified")
@@ -146,7 +148,7 @@ class SqueezeBoxController:
     Args:
       details: {"player": string, "term": string, "type": string}
         - term is the string to search for
-        - type is the search mode; ie. track/album...
+        - type is the search mode: one of search_types.keys()
     """
     if "player" not in details:
       raise Exception("Player not specified")
@@ -193,6 +195,7 @@ class SqueezeBoxController:
 
     Args:
       details: {"player": string, "percent": string}
+        - percent is 0 to 100
     """
     if "player" not in details:
       raise Exception("Player not specified")
@@ -223,6 +226,7 @@ class SqueezeBoxController:
 
     Args:
       details: {"player": string, "other": string, "direction": string}
+         - direction is either TO or FROM
     """
     if "player" not in details:
       raise Exception("Player not specified")
@@ -324,6 +328,7 @@ class SqueezeBoxController:
 
     Args:
       details: {"player": string, "query": string}
+         - query is one of queries.keys()
     """
     if "player" not in details:
       raise Exception("Player not specified")
