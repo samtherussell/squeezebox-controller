@@ -6,7 +6,7 @@ The commands are sent over the JSON RPC interface to the local squeeze server.
 
 For an explaination of the format of each command see [here](https://gist.github.com/jackoson/335bf9ba75363bd167d2470b8689d9f2)
 
-Quick start:
+## Quick start:
 Download from [PyPI](https://pypi.org/project/squeezebox-controller):
 ```bash
 pip install squeezebox-controller
@@ -24,7 +24,7 @@ params = {
 controller.simple_command(params)
 ```
 
-Parameter options:
+## Parameter options:
 
 command keys: [
   "PLAY", "PAUSE", "POWER ON", "POWER OFF",
