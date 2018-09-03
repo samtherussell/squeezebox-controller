@@ -4,14 +4,13 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="squeezebox_controller",
+    name="squeezebox-controller",
     version="0.1",
     author="Jackoson",
-    author_email="jackoson@example.com",
     description="A python api for controlling logitech squeezeboxes via the squeezebox server.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/pypa/sampleproject",
+    url="https://github.com/jackoson/squeezebox-controller",
     packages=setuptools.find_packages(),
     install_requires=[
       'requests',
