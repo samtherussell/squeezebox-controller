@@ -6,7 +6,7 @@ The commands are sent over the JSON RPC interface to the local squeeze server.
 
 For an explaination of the format of each command see [here](https://gist.github.com/jackoson/335bf9ba75363bd167d2470b8689d9f2)
 
-How to use:
+Quick start:
 
 ```python
 from squeezebox_controller import SqueezeBoxController
@@ -19,3 +19,17 @@ params = {
 }
 controller.simple_command(params)
 ```
+
+Parameter options:
+
+command keys: [
+  "PLAY", "PAUSE", "POWER ON", "POWER OFF",
+  "VOLUME UP", "VOLUME DOWN", "SLEEP", "SLEEP SONG",
+  "SKIP", "PREVIOUS", "UNSYNC",
+  "SHUFFLE OFF", "SHUFFLE SONGS", "SHUFFLE ALBUMS",
+  "REPEAT OFF", "REPEAT SONG", "REPEAT PLAYLIST"
+]
+ 
+search types: ["SONG", "ALBUM", "ARTIST"]
+
+queries keys: ["VOLUME", "NOW PLAYING"]
