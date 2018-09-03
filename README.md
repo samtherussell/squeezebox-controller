@@ -7,7 +7,11 @@ The commands are sent over the JSON RPC interface to the local squeeze server.
 For an explaination of the format of each command see [here](https://gist.github.com/jackoson/335bf9ba75363bd167d2470b8689d9f2)
 
 Quick start:
-
+Download from [PyPI](https://pypi.org/project/squeezebox-controller):
+```bash
+pip install squeezebox-controller
+```
+Usage:
 ```python
 from squeezebox_controller import SqueezeBoxController
 
