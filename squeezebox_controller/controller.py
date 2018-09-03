@@ -25,42 +25,42 @@ def _cache_player_custom(self, f):
     return f(helper, details)
   return cached_f
   
+commands = {
+  "PLAY": ["play"],
+  "PAUSE": ["pause"],
+  "POWER ON": ["power", "1"],
+  "POWER OFF": ["power", "0"],
+  "VOLUME UP": ["mixer","volume","+10"],
+  "VOLUME DOWN": ["mixer","volume","-10"],
+  "SLEEP": ["sleep","300"],
+  "SLEEP SONG": ["jiveendoftracksleep"],
+  "SKIP": ["playlist","index","+1"],
+  "PREVIOUS": ["playlist","index","-1"],
+  "UNSYNC": ["sync","-"],
+  "SHUFFLE OFF": ["playlist","shuffle",0],
+  "SHUFFLE SONGS": ["playlist","shuffle",1],
+  "SHUFFLE ALBUMS": ["playlist","shuffle",2],
+  "REPEAT OFF": ["playlist","repeat",0],
+  "REPEAT SONG": ["playlist","repeat",1],
+  "REPEAT PLAYLIST": ["playlist","repeat",2]
+} 
+ 
+search_types = {
+  "SONG": "track",
+  "ALBUM": "album",
+  "ARTIST": "contributor"
+}
+default_search_type = "SONG"
+
+queries = {
+  "VOLUME": lambda info: "The volume is at %d percent"%(info['mixer volume']),
+  "NOW PLAYING": lambda info: info['playlist_loop'][0]['title'] + ' by ' + info['playlist_loop'][0]['artist'] \
+                      if 'playlist_loop' in info and len(info['playlist_loop']) > 0 else "Nothing is playing"
+}
+ 
 class SqueezeBoxController:
 
-  commands = {
-    "PLAY": ["play"],
-    "PAUSE": ["pause"],
-    "POWER ON": ["power", "1"],
-    "POWER OFF": ["power", "0"],
-    "VOLUME UP": ["mixer","volume","+10"],
-    "VOLUME DOWN": ["mixer","volume","-10"],
-    "SLEEP": ["sleep","300"],
-    "SLEEP SONG": ["jiveendoftracksleep"],
-    "SKIP": ["playlist","index","+1"],
-    "PREVIOUS": ["playlist","index","-1"],
-    "UNSYNC": ["sync","-"],
-    "SHUFFLE OFF": ["playlist","shuffle",0],
-    "SHUFFLE SONGS": ["playlist","shuffle",1],
-    "SHUFFLE ALBUMS": ["playlist","shuffle",2],
-    "REPEAT OFF": ["playlist","repeat",0],
-    "REPEAT SONG": ["playlist","repeat",1],
-    "REPEAT PLAYLIST": ["playlist","repeat",2]
-  }
-
   cached_player = None
-
-  search_types = {
-    "SONG": "track",
-    "ALBUM": "album",
-    "ARTIST": "contributor"
-  }
-  default_search_type = "SONG"
-
-  queries = {
-    "VOLUME": lambda info: "The volume is at %d percent"%(info['mixer volume']),
-    "NOW PLAYING": lambda info: info['playlist_loop'][0]['title'] + ' by ' + info['playlist_loop'][0]['artist'] \
-                        if 'playlist_loop' in info and len(info['playlist_loop']) > 0 else "Nothing is playing"
-  }
   
   def __init__(self, server_ip="192.168.1.126", server_port=9000, playername_cleanup_func=None):
     """
@@ -91,12 +91,12 @@ class SqueezeBoxController:
     elif "command" not in details:
       raise Exception("Command not specified")
 
-    if details['command'] not in self.commands:
-      raise Exception("command must be one of: " + str(self.commands.keys()))
+    if details['command'] not in commands:
+      raise Exception("command must be one of: " + str(commands.keys()))
     if details['player'] not in self.player_macs:
       raise Exception("player must be one of: " + ", ".join(self.player_macs.keys()))
 
-    self._make_request(self.player_macs[details['player']], self.commands[details['command']])
+    self._make_request(self.player_macs[details['player']], commands[details['command']])
 
   @_cache_player
   def search_and_play(self, details):
@@ -122,13 +122,13 @@ class SqueezeBoxController:
       raise UserException("Search term cannot be empty")
       
     if details['type'] == '$type':
-      details['type'] = self.default_search_type
-    elif details['type'] not in self.search_types:
-      raise Exception("Search type must be one of: " + str(self.search_types.keys()))
+      details['type'] = default_search_type
+    elif details['type'] not in search_types:
+      raise Exception("Search type must be one of: " + str(search_types.keys()))
       
     result = self._make_request(self.player_macs[details['player']], ["search", 0, 1, "term:" + details["term"]])["result"]
 
-    type = self.search_types[details['type']]
+    type = search_types[details['type']]
     if type+'s_loop' not in result or len(result[type+'s_loop']) < 1:
       raise UserException("No " + type + " matching: " + details["term"])
 
@@ -163,9 +163,9 @@ class SqueezeBoxController:
       raise UserException("Search term cannot be empty")
       
     if details['type'] == '$type':
-      details['type'] = self.default_search_type
-    elif details['type'] not in self.search_types:
-      raise Exception("Search type must be one of: " + str(self.search_types.keys()))
+      details['type'] = default_search_type
+    elif details['type'] not in search_types:
+      raise Exception("Search type must be one of: " + str(search_types.keys()))
       
     search_type_num = {
       "SONG": ".2",
@@ -274,8 +274,8 @@ class SqueezeBoxController:
     master = self.player_macs[details['other']]
       
     self._make_request(master, ["sync",slave])
-    self._make_request(slave, self.commands["POWER ON"])
-    self._make_request(master, self.commands["POWER ON"])
+    self._make_request(slave, commands["POWER ON"])
+    self._make_request(master, commands["POWER ON"])
    
   def add_custom_command(self, name, func, cached=True):
     """Add a named custom command 
@@ -335,14 +335,14 @@ class SqueezeBoxController:
     elif "query" not in details:
       raise Exception("Query not specified")
 
-    if details['query'] not in self.queries:
-      raise Exception("Query must be one of: " + str(self.queries.keys()))
+    if details['query'] not in queries:
+      raise Exception("Query must be one of: " + str(queries.keys()))
     if details['player'] not in self.player_macs:
       raise Exception("player must be one of: " + ", ".join(self.player_macs.keys()))
 
     player_info = self._get_player_info(self.player_macs[details['player']])
     
-    return self.queries[details['query']](player_info)
+    return queries[details['query']](player_info)
     
 
   def _populate_player_macs(self, playername_cleanup=None):
