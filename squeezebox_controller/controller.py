@@ -309,8 +309,8 @@ class SqueezeBoxController:
       raise Exception("Custom Command not available")
         
     helper = {
-      "make_request": partial(self._make_request, self),
-      "get_player_info": partial(self._get_player_info, self),
+      "make_request": partial(self._make_request),
+      "get_player_info": partial(self._get_player_info),
       "requests": requests,
       "base_url": self.base_url,
       "player_lookup": self.player_macs
