@@ -46,11 +46,19 @@ commands = {
 } 
  
 search_types = {
-  "SONG": "track",
-  "ALBUM": "album",
-  "ARTIST": "contributor"
+  "SONG": {"print": "song", "local_search":"tracks", "local_loop":"titles_loop", "local_name": "title", "local_play": "track_id"},
+  "ALBUM": {"print": "album", "local_search":"albums", "local_loop":"albums_loop", "local_name": "album", "local_play": "album_id"},
+  "ARTIST": {"print": "artist", "local_search":"artists", "local_loop":"artists_loop", "local_name": "artist", "local_play": "artist_id"},
+  "GENRE": {"print": "genre", "local_search":"genres", "local_loop":"genres_loop", "local_name": "genre", "local_play": "genre_id"},
+  "PLAYLIST": {"print": "playlist", "local_search":"playlists", "local_loop":"playlists_loop", "local_name": "playlist", "local_play": "playlist_id"},
 }
 default_search_type = "SONG"
+
+spotify_search_types = {
+  "SONG": ".2",
+  "ALBUM": ".1",
+  "ARTIST": ".0"
+}
 
 queries = {
   "VOLUME": lambda info: "The volume is at %d percent"%(info['mixer volume']),
@@ -125,19 +133,19 @@ class SqueezeBoxController:
       details['type'] = default_search_type
     elif details['type'] not in search_types:
       raise Exception("Search type must be one of: " + str(search_types.keys()))
-      
-    result = self._make_request(self.player_macs[details['player']], ["search", 0, 1, "term:" + details["term"]])["result"]
 
     type = search_types[details['type']]
-    if type+'s_loop' not in result or len(result[type+'s_loop']) < 1:
-      raise UserException("No " + type + " matching: " + details["term"])
+    result = self._make_request(self.player_macs[details['player']], [type["local_search"], 0, 1, "search:" + details["term"]])["result"]
+    print(result)
 
-    entity = result[type+'s_loop'][0]
-    title = entity[type]
-    entity_id = entity[type+'_id']
-    entity_id_type = 'artist_id:' if details['type'] == "ARTIST" else type+"_id:"
-    self._make_request(self.player_macs[details['player']], ["playlistcontrol", "cmd:load", entity_id_type + str(entity_id)])
-    return "Playing %s"%title
+    if type['local_loop'] not in result or len(result[type['local_loop']]) < 1:
+      raise UserException("No " + type['print'] + " matching: " + details["term"])
+
+    entity = result[type['local_loop']][0]
+    name = entity[type['local_name']]
+    entity_id = entity['id']
+    self._make_request(self.player_macs[details['player']], ["playlistcontrol", "cmd:load", type['local_play'] + ":" + str(entity_id)])
+    return "Playing %s"%name
 
   @_cache_player
   def spotify_search_and_play(self, details):
@@ -148,7 +156,7 @@ class SqueezeBoxController:
     Args:
       details: {"player": string, "term": string, "type": string}
         - term is the string to search for
-        - type is the search mode: one of search_types.keys()
+        - type is the search mode: one of spotify_search_types.keys()
     """
     if "player" not in details:
       raise Exception("Player not specified")
@@ -164,15 +172,9 @@ class SqueezeBoxController:
       
     if details['type'] == '$type':
       details['type'] = default_search_type
-    elif details['type'] not in search_types:
-      raise Exception("Search type must be one of: " + str(search_types.keys()))
-      
-    search_type_num = {
-      "SONG": ".2",
-      "ALBUM": ".1",
-      "ARTIST": ".0"
-    }
-      
+    elif details['type'] not in spotify_search_types:
+      raise Exception("Search type must be one of: " + str(spotify_search_types.keys()))
+
     item_id = "8_" + details["term"] + search_type_num[details['type']]
     command = ["spotify","items","0","1", "item_id:" + item_id, "menu:spotify"]
     result = self._make_request(self.player_macs[details['player']], command)["result"]
