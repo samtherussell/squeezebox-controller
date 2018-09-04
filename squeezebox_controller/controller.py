@@ -284,7 +284,8 @@ class SqueezeBoxController:
       name: string
       func: (helper_obj, details) -> Unit
         helper_obj: {
-          "make_request": func,
+          "make_request": (mac: string, command: [string]) -> Unit,
+          "get_player_info": (mac: string) -> JSON
           "requests": library object,
           "base_url": string,
           "player_lookup": dict[string] -> string
@@ -309,6 +310,7 @@ class SqueezeBoxController:
         
     helper = {
       "make_request": partial(self._make_request, self),
+      "get_player_info": partial(self._get_player_info, self),
       "requests": requests,
       "base_url": self.base_url,
       "player_lookup": self.player_macs
