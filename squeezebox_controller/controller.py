@@ -70,7 +70,7 @@ class SqueezeBoxController:
 
   cached_player = None
   
-  def __init__(self, server_ip="192.168.1.126", server_port=9000, playername_cleanup_func=None):
+  def __init__(self, server_ip, server_port=9000, playername_cleanup_func=None):
     """
     Args:
       server_ip: string,
