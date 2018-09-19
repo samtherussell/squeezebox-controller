@@ -216,9 +216,41 @@ class SqueezeBoxController:
         raise Exception("Percentage must be a integer")
         
     if percent < 0 or percent > 100:
-      raise Exception("Percentage must be a integer")
+      raise Exception("Percentage must be between 0 and 100")
       
     self._make_request(self.player_macs[details['player']], ["mixer","volume",str(percent)])
+
+@_cache_player
+  def sleep_in(self, details):
+    """Sleeps the player after a delay
+    
+    Sets the specified squeezebox to sleep after the specified time
+
+    Args:
+      details: {"player": string, "time": string}
+        - time is number of minutes
+    """
+    if "player" not in details:
+      raise Exception("Player not specified")
+    elif "time" not in details:
+      raise Exception("Time not specified")
+    
+    if details['player'] not in self.player_macs:
+      raise Exception("player must be one of: " + ", ".join(self.player_macs.keys()))
+    
+    if type(details['time']) == int:
+      time = details['time']
+    else:
+      try:
+        time = int(details['time'])
+      except:
+        raise Exception("Time must be a integer")
+        
+    if time < 0:
+      raise Exception("Time must be positive")
+      
+    self._make_request(self.player_macs[details['player']], ["sleep",str(time*60)])
+
 
   @_cache_player
   def send_music(self, details):
