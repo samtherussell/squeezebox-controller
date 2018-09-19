@@ -132,21 +132,28 @@ class SqueezeBoxController:
       raise UserException("Search term cannot be empty")
       
     if details['type'] == '$type':
-      details['type'] = default_search_type
+      specified_search_types = search_types.keys()
     elif details['type'] not in search_types:
       raise Exception("Search type must be one of: " + str(search_types.keys()))
+    else:
+      specified_search_types = [details['type']]
 
-    type = search_types[details['type']]
-    result = self._make_request(self.player_macs[details['player']], [type["local_search"], 0, 10, "search:" + details["term"]])["result"]
-    print(result)
+    results = []
+    for type_k in specified_search_types:
+      type = search_types[type_k]
+      result = self._make_request(self.player_macs[details['player']], [type["local_search"], 0, 10, "search:" + details["term"]])["result"]
 
-    if type['local_loop'] not in result or len(result[type['local_loop']]) < 1:
+      if type['local_loop'] in result:
+        results = results + [ (r, type_k) for r in result[type['local_loop']] ]
+
+    if len(results) < 1:
       raise UserException("No " + type['print'] + " matching: " + details["term"])
 
-    list = result[type['local_loop']]
-    list.sort(key=lambda x: dist(x[type['local_name']], details["term"]))
+    results.sort(key=lambda x: dist(x[0][search_types[x[1]]['local_name']], details["term"]))
+    print(results)
     
-    entity = list[0]
+    entity,type_k = results[0]
+    type = search_types[type_k]
     name = entity[type['local_name']]
     entity_id = entity['id']
     self._make_request(self.player_macs[details['player']], ["playlistcontrol", "cmd:load", type['local_play'] + ":" + str(entity_id)])

@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="squeezebox-controller",
-    version="0.6",
+    version="0.7",
     author="Jackoson",
     description="A python api for controlling logitech squeezeboxes via the squeezebox server.",
     long_description=long_description,
@@ -13,7 +13,7 @@ setuptools.setup(
     url="https://github.com/jackoson/squeezebox-controller",
     packages=setuptools.find_packages(),
     install_requires=[
-      'requests',
+      'requests', 'pylev'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
