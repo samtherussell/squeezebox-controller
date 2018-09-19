@@ -220,7 +220,7 @@ class SqueezeBoxController:
       
     self._make_request(self.player_macs[details['player']], ["mixer","volume",str(percent)])
 
-@_cache_player
+  @_cache_player
   def sleep_in(self, details):
     """Sleeps the player after a delay
     
