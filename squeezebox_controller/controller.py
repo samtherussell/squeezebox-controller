@@ -111,7 +111,7 @@ class SqueezeBoxController:
   @_cache_player
   def search_and_play(self, details):
     """Plays the specified music
-    
+
     Searches for the specified music and loads it on the specified squeezebox
 
     Args:
@@ -119,6 +119,35 @@ class SqueezeBoxController:
         - term is the string to search for
         - type is the search mode: one of search_types.keys()
     """
+    return self._search_and(details, "load")
+
+  @_cache_player
+  def search_and_play_next(self, details):
+    """Plays the specified music next
+
+    Searches for the specified music and loads it to play next on the specified squeezebox.
+
+    Args:
+      details: {"player": string, "term": string, "type": string}
+        - term is the string to search for
+        - type is the search mode: one of search_types.keys()
+    """
+    return self._search_and(details, "insert")
+
+  @_cache_player
+  def search_and_play_end(self, details):
+    """Plays the specified music at end.
+
+    Searches for the specified music and loads it on to the end of the specified squeezebox's playlist.
+
+    Args:
+      details: {"player": string, "term": string, "type": string}
+        - term is the string to search for
+        - type is the search mode: one of search_types.keys()
+    """
+    return self._search_and(details, "add")
+
+  def _search_and(self, details, command):
     if "player" not in details:
       raise Exception("Player not specified")
     elif "term" not in details:
@@ -150,13 +179,12 @@ class SqueezeBoxController:
       raise UserException("No " + type['print'] + " matching: " + details["term"])
 
     results.sort(key=lambda x: dist(x[0][search_types[x[1]]['local_name']], details["term"]))
-    print(results)
     
     entity,type_k = results[0]
     type = search_types[type_k]
     name = entity[type['local_name']]
     entity_id = entity['id']
-    self._make_request(self.player_macs[details['player']], ["playlistcontrol", "cmd:load", type['local_play'] + ":" + str(entity_id)])
+    self._make_request(self.player_macs[details['player']], ["playlistcontrol", "cmd:"+command, type['local_play'] + ":" + str(entity_id)])
     return "Playing %s"%name
 
   @_cache_player
