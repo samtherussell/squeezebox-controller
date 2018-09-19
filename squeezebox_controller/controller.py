@@ -2,6 +2,8 @@ import requests
 import json
 from functools import wraps, partial
 
+from pylev import levenshtein as dist
+
 class UserException(Exception):
   pass
   
@@ -135,13 +137,16 @@ class SqueezeBoxController:
       raise Exception("Search type must be one of: " + str(search_types.keys()))
 
     type = search_types[details['type']]
-    result = self._make_request(self.player_macs[details['player']], [type["local_search"], 0, 1, "search:" + details["term"]])["result"]
+    result = self._make_request(self.player_macs[details['player']], [type["local_search"], 0, 10, "search:" + details["term"]])["result"]
     print(result)
 
     if type['local_loop'] not in result or len(result[type['local_loop']]) < 1:
       raise UserException("No " + type['print'] + " matching: " + details["term"])
 
-    entity = result[type['local_loop']][0]
+    list = result[type['local_loop']]
+    list.sort(key=lambda x: dist(x[type['local_name']], details["term"]))
+    
+    entity = list[0]
     name = entity[type['local_name']]
     entity_id = entity['id']
     self._make_request(self.player_macs[details['player']], ["playlistcontrol", "cmd:load", type['local_play'] + ":" + str(entity_id)])
