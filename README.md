@@ -4,7 +4,7 @@ A python interface for controlling logitech squeezeboxes via the squeezebox serv
 
 The commands are sent over the JSON RPC interface to the local squeeze server.
 
-For an explaination of the format of each command see [here](https://gist.github.com/jackoson/335bf9ba75363bd167d2470b8689d9f2)
+For an explaination of the format of each command see [here](https://gist.github.com/samtherussell/335bf9ba75363bd167d2470b8689d9f2)
 
 ## Quick start:
 Download from [PyPI](https://pypi.org/project/squeezebox-controller):
