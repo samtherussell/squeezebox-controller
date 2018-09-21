@@ -177,7 +177,7 @@ class SqueezeBoxController:
         results = results + [ (r, type_k) for r in result[type['local_loop']] ]
 
     if len(results) < 1:
-      raise UserException("No " + type['print'] + " matching: " + details["term"])
+      raise UserException("Nothing matching: " + details["term"])
 
     results.sort(key=lambda x: dist(x[0][search_types[x[1]]['local_name']], details["term"]))
     
