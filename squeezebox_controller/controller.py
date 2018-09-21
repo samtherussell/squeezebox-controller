@@ -216,7 +216,7 @@ class SqueezeBoxController:
     elif details['type'] not in spotify_search_types:
       raise Exception("Search type must be one of: " + str(spotify_search_types.keys()))
 
-    item_id = "8_" + details["term"] + search_type_num[details['type']]
+    item_id = "8_" + details["term"] + spotify_search_types[details['type']]
     command = ["spotify","items","0","1", "item_id:" + item_id, "menu:spotify"]
     result = self._make_request(self.player_macs[details['player']], command)["result"]
     if result["count"] == 0:
