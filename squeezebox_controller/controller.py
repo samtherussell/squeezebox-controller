@@ -44,7 +44,8 @@ commands = {
   "SHUFFLE ALBUMS": ["playlist","shuffle",2],
   "REPEAT OFF": ["playlist","repeat",0],
   "REPEAT SONG": ["playlist","repeat",1],
-  "REPEAT PLAYLIST": ["playlist","repeat",2]
+  "REPEAT PLAYLIST": ["playlist","repeat",2],
+  "MUTE": ["mixer","volume","0"]
 } 
  
 search_types = {
