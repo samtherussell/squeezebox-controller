@@ -120,7 +120,7 @@ class SqueezeBoxController:
         - term is the string to search for
         - type is the search mode: one of search_types.keys()
     """
-    return self._search_and(details, "load")
+    return "Playing %s"%self._search_and(details, "load")
 
   @_cache_player
   def search_and_play_next(self, details):
@@ -133,7 +133,7 @@ class SqueezeBoxController:
         - term is the string to search for
         - type is the search mode: one of search_types.keys()
     """
-    return self._search_and(details, "insert")
+    return "Playing %s next"%self._search_and(details, "insert")
 
   @_cache_player
   def search_and_play_end(self, details):
@@ -146,7 +146,7 @@ class SqueezeBoxController:
         - term is the string to search for
         - type is the search mode: one of search_types.keys()
     """
-    return self._search_and(details, "add")
+    return "Queuing %s"%self._search_and(details, "add")
 
   def _search_and(self, details, command):
     if "player" not in details:
@@ -186,7 +186,7 @@ class SqueezeBoxController:
     name = entity[type['local_name']]
     entity_id = entity['id']
     self._make_request(self.player_macs[details['player']], ["playlistcontrol", "cmd:"+command, type['local_play'] + ":" + str(entity_id)])
-    return "Playing %s"%name
+    return name
 
   @_cache_player
   def spotify_search_and_play(self, details):
