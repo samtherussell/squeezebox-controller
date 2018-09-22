@@ -6,27 +6,42 @@ from pylev import levenshtein as dist
 
 class UserException(Exception):
   pass
-  
+
 def _cache_player(f):
   @wraps(f)
-  def cached_f(self, details):
+  def cached_f(self, details, *args):
     if (not self.cached_player == None) and ("player" not in details or details["player"] == "$player"):
       details["player"] = self.cached_player
     else:
       self.cached_player = details['player']
-    return f(self, details)
+    return f(self, details, *args)
   return cached_f
   
 def _cache_player_custom(self, f):
   @wraps(f)
-  def cached_f(helper, details={}):
+  def cached_f(helper, details, *args):
     if (not self.cached_player == None) and ("player" not in details or details["player"] == "$player"):
       details["player"] = self.cached_player
     else:
       self.cached_player = details['player']
-    return f(helper, details)
+    return f(helper, details, *args)
   return cached_f
-  
+
+def _needs_player(field):
+  def dec(f):
+    @wraps(f)
+    def needs_player_f(self, details, *args):
+      if field not in details:
+        raise Exception("%s not specified"%field)
+
+      details[field] = details[field].lower()
+
+      if details[field] not in self.player_macs:
+        raise Exception("%s must be one of: %s"%(field, ", ".join(self.player_macs.keys())))
+      return f(self, details, *args)
+    return needs_player_f
+  return dec
+
 commands = {
   "PLAY": ["play"],
   "PAUSE": ["pause"],
@@ -78,7 +93,8 @@ class SqueezeBoxController:
     self.end_point_url = self.base_url + "/jsonrpc.js"
     self.player_macs = self._populate_player_macs(playername_cleanup_func)
     self._custom_commands = {}
-  
+
+  @_needs_player("player")
   @_cache_player
   def simple_command(self, details):
     """Sends a simple squeezebox commands
@@ -90,15 +106,11 @@ class SqueezeBoxController:
          - player is the player's name
          - command is one of commands.keys()
     """
-    if "player" not in details:
-      raise Exception("Player not specified")
-    elif "command" not in details:
+    if "command" not in details:
       raise Exception("Command not specified")
 
     if details['command'] not in commands:
       raise Exception("command must be one of: " + str(commands.keys()))
-    if details['player'] not in self.player_macs:
-      raise Exception("player must be one of: " + ", ".join(self.player_macs.keys()))
 
     self._make_request(self.player_macs[details['player']], commands[details['command']])
 
@@ -141,16 +153,13 @@ class SqueezeBoxController:
     """
     return "Queuing %s"%self._search_and(details, "add")
 
+  @_needs_player("player")
   def _search_and(self, details, command):
-    if "player" not in details:
-      raise Exception("Player not specified")
-    elif "term" not in details:
+    if "term" not in details:
       raise Exception("Search term not specified")
     elif "type" not in details:
       raise Exception("Search type not specified")
 
-    if details['player'] not in self.player_macs:
-      raise Exception("player must be one of: " + ", ".join(self.player_macs.keys()))
     if details['term'] == "":
       raise UserException("Search term cannot be empty")
       
@@ -181,6 +190,7 @@ class SqueezeBoxController:
     self._make_request(self.player_macs[details['player']], ["playlistcontrol", "cmd:"+command, type['local_play'] + ":" + str(entity_id)])
     return name
 
+  @_needs_player("player")
   @_cache_player
   def set_volume(self, details):
     """Sets volume at specified level
@@ -191,13 +201,8 @@ class SqueezeBoxController:
       details: {"player": string, "percent": string}
         - percent is 0 to 100
     """
-    if "player" not in details:
-      raise Exception("Player not specified")
-    elif "percent" not in details:
+    if "percent" not in details:
       raise Exception("Percentage not specified")
-    
-    if details['player'] not in self.player_macs:
-      raise Exception("player must be one of: " + ", ".join(self.player_macs.keys()))
     
     if type(details['percent']) == int:
       percent = details['percent']
@@ -212,6 +217,7 @@ class SqueezeBoxController:
       
     self._make_request(self.player_macs[details['player']], ["mixer","volume",str(percent)])
 
+  @_needs_player("player")
   @_cache_player
   def sleep_in(self, details):
     """Sleeps the player after a delay
@@ -222,14 +228,9 @@ class SqueezeBoxController:
       details: {"player": string, "time": string}
         - time is number of minutes
     """
-    if "player" not in details:
-      raise Exception("Player not specified")
-    elif "time" not in details:
+    if "time" not in details:
       raise Exception("Time not specified")
-    
-    if details['player'] not in self.player_macs:
-      raise Exception("player must be one of: " + ", ".join(self.player_macs.keys()))
-    
+
     if type(details['time']) == int:
       time = details['time']
     else:
@@ -243,7 +244,8 @@ class SqueezeBoxController:
       
     self._make_request(self.player_macs[details['player']], ["sleep",str(time*60)])
 
-
+  @_needs_player("player")
+  @_needs_player("other")
   @_cache_player
   def send_music(self, details):
     """Sends music from one squeezebox to another
@@ -254,18 +256,9 @@ class SqueezeBoxController:
       details: {"player": string, "other": string, "direction": string}
          - direction is either TO or FROM
     """
-    if "player" not in details:
-      raise Exception("Player not specified")
-    if "other" not in details:
-      raise Exception("Other player not specified")
-    elif "direction" not in details:
+    if "direction" not in details:
       raise Exception("Direction not specified")
-    
-    if details['player'] not in self.player_macs:
-      raise Exception("player must be one of: " + ", ".join(self.player_macs.keys()))
-    if details['other'] not in self.player_macs:
-      raise Exception("other player must be one of: " + str(self.player_macs.keys()))
-    
+
     if details['direction'] == 'TO':
       source = self.player_macs[details['player']]
       dest = self.player_macs[details['other']]
@@ -276,7 +269,9 @@ class SqueezeBoxController:
       raise Exception('direction must be either "from" or "to".')
       
     self._make_request(self.player_macs[details['player']], ["switchplayer","from:" + source,"to:" + dest])
-   
+
+  @_needs_player("player")
+  @_needs_player("other")
   @_cache_player
   def sync_player(self, details):
     """Sends music from one squeezebox to another
@@ -286,16 +281,6 @@ class SqueezeBoxController:
     Args:
       details: {"player": string, "other": string}
     """
-    if "player" not in details:
-      raise Exception("Player not specified")
-    if "other" not in details:
-      raise Exception("Other player not specified")
-     
-    if details['player'] not in self.player_macs:
-      raise Exception("player must be one of: " + ", ".join(self.player_macs.keys()))
-    if details['other'] not in self.player_macs:
-      raise Exception("other player must be one of: " + str(self.player_macs.keys()))
-    
     slave = self.player_macs[details['player']]
     master = self.player_macs[details['other']]
       
@@ -347,7 +332,7 @@ class SqueezeBoxController:
     else:
       return self._custom_commands[name](helper, details)
     
-    
+  @_needs_player("player")
   @_cache_player
   def simple_query(self, details):
     """Performs a simple query on a squeezebox 
@@ -358,15 +343,11 @@ class SqueezeBoxController:
       details: {"player": string, "query": string}
          - query is one of queries.keys()
     """
-    if "player" not in details:
-      raise Exception("Player not specified")
-    elif "query" not in details:
+    if "query" not in details:
       raise Exception("Query not specified")
 
     if details['query'] not in queries:
       raise Exception("Query must be one of: " + str(queries.keys()))
-    if details['player'] not in self.player_macs:
-      raise Exception("player must be one of: " + ", ".join(self.player_macs.keys()))
 
     player_info = self._get_player_info(self.player_macs[details['player']])
     
@@ -379,7 +360,7 @@ class SqueezeBoxController:
     for player in self._make_request('-', ["players","0", count])['result']['players_loop']:
       name = player['name']
       if playername_cleanup != None:
-        name = playername_cleanup(name)
+        name = playername_cleanup(name).lower()
       player_macs[name] = player['playerid']
     return player_macs
       
