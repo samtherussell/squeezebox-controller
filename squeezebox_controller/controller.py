@@ -10,7 +10,7 @@ class UserException(Exception):
 def _cache_player(f):
   @wraps(f)
   def cached_f(self, details, *args):
-    if (not self.cached_player == None) and ("player" not in details or details["player"] == "$player"):
+    if (not self.cached_player == None) and ("player" not in details or details["player"] == ""):
       details["player"] = self.cached_player
     else:
       self.cached_player = details['player']
@@ -20,7 +20,7 @@ def _cache_player(f):
 def _cache_player_custom(self, f):
   @wraps(f)
   def cached_f(helper, details, *args):
-    if (not self.cached_player == None) and ("player" not in details or details["player"] == "$player"):
+    if (not self.cached_player == None) and ("player" not in details or details["player"] == ""):
       details["player"] = self.cached_player
     else:
       self.cached_player = details['player']
@@ -163,7 +163,7 @@ class SqueezeBoxController:
     if details['term'] == "":
       raise UserException("Search term cannot be empty")
       
-    if details['type'] == '$type':
+    if details['type'] == "":
       specified_search_types = search_types.keys()
     elif details['type'] not in search_types:
       raise Exception("Search type must be one of: " + str(search_types.keys()))
