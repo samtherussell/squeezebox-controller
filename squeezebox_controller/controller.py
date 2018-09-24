@@ -33,9 +33,6 @@ def _needs_player(field):
     def needs_player_f(self, details, *args):
       if field not in details:
         raise Exception("%s not specified"%field)
-
-      details[field] = details[field].lower()
-
       if details[field] not in self.player_macs:
         raise Exception("%s must be one of: %s"%(field, ", ".join(self.player_macs.keys())))
       return f(self, details, *args)
@@ -360,7 +357,7 @@ class SqueezeBoxController:
     for player in self._make_request('-', ["players","0", count])['result']['players_loop']:
       name = player['name']
       if playername_cleanup != None:
-        name = playername_cleanup(name).lower()
+        name = playername_cleanup(name)
       player_macs[name] = player['playerid']
     return player_macs
       
