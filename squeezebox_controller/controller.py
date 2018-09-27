@@ -91,8 +91,8 @@ class SqueezeBoxController:
     self.player_macs = self._populate_player_macs(playername_cleanup_func)
     self._custom_commands = {}
 
-  @_needs_player("player")
   @_cache_player
+  @_needs_player("player")
   def simple_command(self, details):
     """Sends a simple squeezebox commands
     
@@ -187,8 +187,8 @@ class SqueezeBoxController:
     self._make_request(self.player_macs[details['player']], ["playlistcontrol", "cmd:"+command, type['local_play'] + ":" + str(entity_id)])
     return name
 
-  @_needs_player("player")
   @_cache_player
+  @_needs_player("player")
   def set_volume(self, details):
     """Sets volume at specified level
     
@@ -214,8 +214,8 @@ class SqueezeBoxController:
       
     self._make_request(self.player_macs[details['player']], ["mixer","volume",str(percent)])
 
-  @_needs_player("player")
   @_cache_player
+  @_needs_player("player")
   def sleep_in(self, details):
     """Sleeps the player after a delay
     
@@ -241,9 +241,9 @@ class SqueezeBoxController:
       
     self._make_request(self.player_macs[details['player']], ["sleep",str(time*60)])
 
+  @_cache_player
   @_needs_player("player")
   @_needs_player("other")
-  @_cache_player
   def send_music(self, details):
     """Sends music from one squeezebox to another
     
@@ -267,9 +267,9 @@ class SqueezeBoxController:
       
     self._make_request(self.player_macs[details['player']], ["switchplayer","from:" + source,"to:" + dest])
 
+  @_cache_player
   @_needs_player("player")
   @_needs_player("other")
-  @_cache_player
   def sync_player(self, details):
     """Sends music from one squeezebox to another
     
@@ -329,8 +329,8 @@ class SqueezeBoxController:
     else:
       return self._custom_commands[name](helper, details)
     
-  @_needs_player("player")
   @_cache_player
+  @_needs_player("player")
   def simple_query(self, details):
     """Performs a simple query on a squeezebox 
     
