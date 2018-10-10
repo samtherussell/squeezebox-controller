@@ -2,7 +2,7 @@ import requests
 import json
 from functools import wraps, partial
 
-from pylev import levenshtein as dist
+from squeezebox_controller.string_distance import dist
 
 class UserException(Exception):
   pass
