@@ -39,13 +39,14 @@ def dist(a, b):
     else:
       options = []
       minlen = min(len(a), len(b)) + 1
-      for i in range(1, minlen, 2):
+      for i in reversed(range(1, minlen, 3)):
         if a[:i] == b[:i]:
           options = options + [
             _v_weights["correct"][i] + d(s+1, a[i:], b[i:]),
             _v_weights["add"][i] + d(s+1, a, b[i:]),
             _v_weights["sub"][i] + d(s+1, a[i:], b)
           ]
+          break
         else:
           options = options + [
             _v_weights["swap"][i] + d(s+1, a[i:], b[i:]),
@@ -54,7 +55,7 @@ def dist(a, b):
           ]
 
       if len(a) > 1 and len(b) > 1:
-        for i in range(3,minlen, 2):
+        for i in range(5,minlen, 2):
           for j in range(i, minlen-i):
             if a[:i] == b[j:j+i]:
               options.append(_v_weights["trans"][i] + d(s+1, a[i:], b[:j] + b[j+i:]))
