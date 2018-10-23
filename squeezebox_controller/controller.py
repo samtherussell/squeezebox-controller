@@ -78,7 +78,7 @@ class SqueezeBoxController:
 
   cached_player = None
   
-  def __init__(self, server_ip, server_port=9000, playername_cleanup_func=None):
+  def __init__(self, server_ip, server_port=9000, playername_cleanup_func=None, default_player = None):
     """
     Args:
       server_ip: string,
@@ -90,6 +90,7 @@ class SqueezeBoxController:
     self.end_point_url = self.base_url + "/jsonrpc.js"
     self.player_macs = self._populate_player_macs(playername_cleanup_func)
     self._custom_commands = {}
+    self.cached_player = default_player
 
   @_cache_player
   @_needs_player("player")
