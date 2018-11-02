@@ -6,17 +6,28 @@
 Welcome to Squeezebox Controller's documentation!
 =================================================
 
-Contents:
+Squeezeboxes can be controlled via a Squeezebox Server using the SqueezeboxController class in the squeezebox_controller package documented below.
 
-.. toctree::
-   :maxdepth: 2
+squeezebox_controller package
+=============================
 
+Module contents
+---------------
 
+.. automodule:: squeezebox_controller
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
-Indices and tables
-==================
+Submodules
+----------
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+This is used within the module to complete the search functionality but can also be used externally if needed.
 
+squeezebox_controller.string_distance module
+--------------------------------------------
+
+.. automodule:: squeezebox_controller.string_distance
+    :members:
+    :undoc-members:
+    :show-inheritance:
