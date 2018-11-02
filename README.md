@@ -1,5 +1,7 @@
 # Squeezebox Controller
 
+[![Documentation Status](https://readthedocs.org/projects/squeezebox-controller/badge/?version=latest)](https://squeezebox-controller.readthedocs.io/en/latest/?badge=latest)
+
 A python interface for controlling logitech squeezeboxes via the squeezebox server.
 
 The commands are sent over the JSON RPC interface to the local squeeze server.
