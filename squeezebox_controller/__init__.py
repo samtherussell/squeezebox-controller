@@ -78,7 +78,7 @@ class SqueezeBoxController:
 
   cached_player = None
   
-  def __init__(self, server_ip, server_port=9000, playername_cleanup_func=None, default_player = None):
+  def __init__(self, server_ip, server_port=9000, playername_cleanup_func=None, default_player = None, request_lib=requests):
     """
     Args:
       server_ip: ``string``,
@@ -91,6 +91,7 @@ class SqueezeBoxController:
     self.player_macs = self._populate_player_macs(playername_cleanup_func)
     self._custom_commands = {}
     self.cached_player = default_player
+    self.request_lib = request_lib
 
   @_cache_player
   @_needs_player("player")
@@ -323,7 +324,7 @@ class SqueezeBoxController:
     helper = {
       "make_request": partial(self._make_request),
       "get_player_info": partial(self._get_player_info),
-      "requests": requests,
+      "requests": self.request_lib,
       "base_url": self.base_url,
       "player_lookup": self.player_macs
     }
@@ -370,5 +371,5 @@ class SqueezeBoxController:
     
   def _make_request(self, player, command):
     payload = {'method': 'slim.request', 'params': [player, command]}
-    req = requests.post(self.end_point_url, json=payload)
+    req = self.request_lib.post(self.end_point_url, json=payload)
     return json.loads(req.content.decode("utf-8"))
