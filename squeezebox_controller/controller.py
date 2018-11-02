@@ -81,9 +81,9 @@ class SqueezeBoxController:
   def __init__(self, server_ip, server_port=9000, playername_cleanup_func=None, default_player = None):
     """
     Args:
-      server_ip: string,
-      server_port: int,
-      playername_cleanup_func: (string) -> string
+      server_ip: ``string``,
+      server_port: ``int``,
+      playername_cleanup_func: ``(string) -> string``
         for tidying up the player names got from the squeeze server
     """
     self.base_url = "http://" + server_ip + ":" + str(server_port)
@@ -100,9 +100,9 @@ class SqueezeBoxController:
     Sends one of the fixed commands to the specified squeezebox
 
     Args:
-      details: {"player": string, "command": string}
+      details: {"player": ``string``, "command": ``string``}
          - player is the player's name
-         - command is one of commands.keys()
+         - command is one of ``commands.keys()``
     """
     if "command" not in details:
       raise Exception("Command not specified")
@@ -119,9 +119,9 @@ class SqueezeBoxController:
     Searches for the specified music and loads it on the specified squeezebox
 
     Args:
-      details: {"player": string, "term": string, "type": string}
+      details: {"player": ``string``, "term": ``string``, "type": ``string``}
         - term is the string to search for
-        - type is the search mode: one of search_types.keys()
+        - type is the search mode: one of ``search_types.keys()``
     """
     return "Playing %s"%self._search_and(details, "load")
 
@@ -132,9 +132,9 @@ class SqueezeBoxController:
     Searches for the specified music and loads it to play next on the specified squeezebox.
 
     Args:
-      details: {"player": string, "term": string, "type": string}
+      details: {"player": ``string``, "term": ``string``, "type": ``string``}
         - term is the string to search for
-        - type is the search mode: one of search_types.keys()
+        - type is the search mode: one of ``search_types.keys()``
     """
     return "Playing %s next"%self._search_and(details, "insert")
 
@@ -145,9 +145,9 @@ class SqueezeBoxController:
     Searches for the specified music and loads it on to the end of the specified squeezebox's playlist.
 
     Args:
-      details: {"player": string, "term": string, "type": string}
+      details: {"player": ``string``, "term": ``string``, "type": ``string``}
         - term is the string to search for
-        - type is the search mode: one of search_types.keys()
+        - type is the search mode: one of ``search_types.keys()``
     """
     return "Queuing %s"%self._search_and(details, "add")
 
@@ -196,7 +196,7 @@ class SqueezeBoxController:
     Sets the volume of the specified squeezebox at the specified level
 
     Args:
-      details: {"player": string, "percent": string}
+      details: {"player": ``string``, "percent": ``string``}
         - percent is 0 to 100
     """
     if "percent" not in details:
@@ -223,7 +223,7 @@ class SqueezeBoxController:
     Sets the specified squeezebox to sleep after the specified time
 
     Args:
-      details: {"player": string, "time": string}
+      details: {"player": ``string``, "time": ``string``}
         - time is number of minutes
     """
     if "time" not in details:
@@ -251,7 +251,7 @@ class SqueezeBoxController:
     Sends whatever is playing on the source to the destination squeezebox
 
     Args:
-      details: {"player": string, "other": string, "direction": string}
+      details: {"player": ``string``, "other": ``string``, "direction": ``string``}
          - direction is either TO or FROM
     """
     if "direction" not in details:
@@ -277,7 +277,7 @@ class SqueezeBoxController:
     Sends whatever is playing on the source to the destination squeezebox
 
     Args:
-      details: {"player": string, "other": string}
+      details: {"player": ``string``, "other": ``string``}
     """
     slave = self.player_macs[details['player']]
     master = self.player_macs[details['other']]
@@ -287,21 +287,24 @@ class SqueezeBoxController:
     self._make_request(master, commands["POWER ON"])
    
   def add_custom_command(self, name, func, cached=True):
-    """Add a named custom command 
+    """Performs a simple query on a squeezebox 
     
+    Performs one of the fixed queries on the specified squeezebox
+
     Args:
-      name: string
-      func: (helper_obj, details) -> Unit
-        helper_obj: {
-          "make_request": (mac: string, command: [string]) -> Unit,
-          "get_player_info": (mac: string) -> JSON
-          "requests": library object,
-          "base_url": string,
-          "player_lookup": dict[string] -> string
-        }
-        details: custom
-      cached: boolean
-        should the player field be cached
+      name: ``string``,
+      func: ``(helper_obj, details) -> Unit``,
+      cached: ``boolean`` - should the player field be cached
+      
+    helper_obj:
+      Is an dictionary with the following contents...
+      "make_request": ``(mac: string, command: [string]) -> Unit``,
+      "get_player_info": ``(mac: string) -> JSON``,
+      "requests": library object,
+      "base_url": ``string``,
+      "player_lookup": ``dict[string] -> string``
+      
+    details: [optional] the parameter object to pass to the called custom function.
     """
     if cached:
       func = _cache_player_custom(self, func)
@@ -311,7 +314,7 @@ class SqueezeBoxController:
     """Run named custom command
     
     Args:
-      name: string
+      name: ``string``
       details - passed to custom command
     """  
     if name not in self._custom_commands:
@@ -338,8 +341,8 @@ class SqueezeBoxController:
     Performs one of the fixed queries on the specified squeezebox
 
     Args:
-      details: {"player": string, "query": string}
-         - query is one of queries.keys()
+      details: {"player": ``string``, "query": ``string``}
+         - query is one of ``queries.keys()``
     """
     if "query" not in details:
       raise Exception("Query not specified")
