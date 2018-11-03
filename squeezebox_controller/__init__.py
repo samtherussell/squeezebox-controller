@@ -88,10 +88,10 @@ class SqueezeBoxController:
     """
     self.base_url = "http://" + server_ip + ":" + str(server_port)
     self.end_point_url = self.base_url + "/jsonrpc.js"
+    self.request_lib = request_lib
     self.player_macs = self._populate_player_macs(playername_cleanup_func)
     self._custom_commands = {}
     self.cached_player = default_player
-    self.request_lib = request_lib
 
   @_cache_player
   @_needs_player("player")
