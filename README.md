@@ -1,6 +1,8 @@
 # Squeezebox Controller
 
 [![Documentation Status](https://readthedocs.org/projects/squeezebox-controller/badge/?version=latest)](https://squeezebox-controller.readthedocs.io/en/latest/?badge=latest)
+[![Build Status](https://travis-ci.com/samtherussell/squeezebox-controller.svg?branch=master)](https://travis-ci.com/samtherussell/squeezebox-controller.svg?branch=master)
+
 
 A python interface for controlling logitech squeezeboxes via the squeezebox server.
 
