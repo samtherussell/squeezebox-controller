@@ -365,7 +365,7 @@ class SqueezeBoxController:
       if playername_cleanup != None:
         name = playername_cleanup(name)
       player_macs[name] = player['playerid']
-      player_macs["ALL"] = list(player_macs.values())
+    player_macs["ALL"] = list(player_macs.values())
     return player_macs
       
   def _get_player_info(self, player):
