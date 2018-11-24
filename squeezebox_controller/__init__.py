@@ -379,7 +379,7 @@ class SqueezeBoxController:
 
     if type(player) == list:
       return [handler(p) for p in player]
-    elif type(player) == string:
+    elif type(player) == str:
       return handler(player)
     else:
       raise Exception("Player must be a MAC string or list of MAC strings")
