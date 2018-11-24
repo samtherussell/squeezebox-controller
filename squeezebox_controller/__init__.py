@@ -361,15 +361,27 @@ class SqueezeBoxController:
     count = int(self._make_request('-', ["player","count", "?"])['result']['_count'])
     for player in self._make_request('-', ["players","0", count])['result']['players_loop']:
       name = player['name']
+      assert not name == "ALL"
       if playername_cleanup != None:
         name = playername_cleanup(name)
       player_macs[name] = player['playerid']
+      player_macs["ALL"] = player_macs.values()
     return player_macs
       
   def _get_player_info(self, player):
     return self._make_request(player, ["status","-"])["result"]
     
   def _make_request(self, player, command):
-    payload = {'method': 'slim.request', 'params': [player, command]}
-    req = self.request_lib.post(self.end_point_url, json=payload)
-    return json.loads(req.content.decode("utf-8"))
+    def handler(p):
+      payload = {'method': 'slim.request', 'params': [p, command]}
+      req = self.request_lib.post(self.end_point_url, json=payload)
+      return json.loads(req.content.decode("utf-8"))
+
+    if type(player) == list:
+      return [handler(p) for p in player]
+    elif type(player) == string:
+      return handler(player)
+    else:
+      raise Exception("Player must be a MAC string or list of MAC strings")
+    
+    
