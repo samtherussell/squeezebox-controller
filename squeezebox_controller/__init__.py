@@ -69,6 +69,7 @@ search_types = {
 }
 
 queries = {
+  "RAW": lambda info: info,
   "VOLUME": lambda info: "The volume is at %d percent"%(info['mixer volume']),
   "NOW PLAYING": lambda info: info['playlist_loop'][0]['title'] + ' by ' + info['playlist_loop'][0]['artist'] \
                       if 'artist' in info['playlist_loop'][0] else info['playlist_loop'][0]['title'] \
