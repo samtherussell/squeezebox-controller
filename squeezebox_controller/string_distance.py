@@ -1,4 +1,5 @@
 import math
+from collections import deque
 
 """
 _v_weights = {
@@ -66,3 +67,50 @@ def dist(a, b):
       mem[(a,b)] = v
       return v
   return d(0,a,b)
+
+def try_match(input, options, threshold=5):
+  input = input.lower()
+  scores = []
+  for key in options:
+    option = options[key]
+    scores.append((key, dist(input, key.lower())))
+    if type(option) == dict and "synonyms" in option:
+      for regex in option["synonyms"]:
+        for text in enumerate_regex(regex.lower()):
+          scores.append((key, dist(input, text.lower())))
+  print(sorted(scores, key=lambda x: x[1])) 
+  best = min(scores, key=lambda x: x[1])
+  if best[1] < threshold:
+    print(f"return {best}")
+    return best[0]
+  else:
+    print(f"return None")
+    return None
+
+
+def enumerate_regex(regex):
+  done = []
+  doing = deque([('', regex)])
+  while len(doing) > 0:
+    x = doing.popleft()
+    s,r = x
+    start = r.find('(')
+    if start == -1:
+      done.append(s + r)
+      continue
+
+    end = r.find(')', start+1)
+    if end == -1:
+      raise Exception(f"bad regex: {r}")
+
+    options = r[start+1:end].split('|')
+    if end+1 < len(r) and r[end+1] == '?':
+      options.append('')
+      end += 1
+
+    before = r[:start]
+    after = r[end+1:]
+    for option in options:
+      doing.append((s + before + option, after))
+
+  return done

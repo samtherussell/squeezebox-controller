@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="squeezebox-controller",
-    version="0.15.4",
+    version="1.0.1",
     author="Jackoson",
     description="A python api for controlling logitech squeezeboxes via the squeezebox server.",
     long_description=long_description,

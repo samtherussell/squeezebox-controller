@@ -2,7 +2,7 @@ import requests
 import json
 from functools import wraps, partial
 
-from squeezebox_controller.string_distance import dist
+from squeezebox_controller.string_distance import dist, try_match
 
 class UserException(Exception):
   pass
@@ -34,30 +34,34 @@ def _needs_player(field):
       if field not in details:
         raise Exception("%s not specified"%field)
       if details[field] not in self.player_macs:
-        raise Exception("%s must be one of: %s"%(field, ", ".join(self.player_macs.keys())))
+        player = try_match(details[field], self.player_macs)
+        if player is None:
+          raise Exception("%s must be one of: %s"%(field, ", ".join(self.player_macs.keys())))
+        else:
+          details[field] = player
       return f(self, details, *args)
     return needs_player_f
   return dec
 
 commands = {
-  "PLAY": ["play"],
-  "PAUSE": ["pause"],
-  "POWER ON": ["power", "1"],
-  "POWER OFF": ["power", "0"],
-  "VOLUME UP": ["mixer","volume","+20"],
-  "VOLUME DOWN": ["mixer","volume","-20"],
-  "SLEEP": ["sleep","300"],
-  "SLEEP SONG": ["jiveendoftracksleep"],
-  "SKIP": ["playlist","index","+1"],
-  "PREVIOUS": ["playlist","index","-1"],
-  "UNSYNC": ["sync","-"],
-  "SHUFFLE OFF": ["playlist","shuffle",0],
-  "SHUFFLE SONGS": ["playlist","shuffle",1],
-  "SHUFFLE ALBUMS": ["playlist","shuffle",2],
-  "REPEAT OFF": ["playlist","repeat",0],
-  "REPEAT SONG": ["playlist","repeat",1],
-  "REPEAT PLAYLIST": ["playlist","repeat",2],
-  "MUTE": ["mixer","volume","0"]
+  "PLAY": {"command":["play"], "synonyms": ["play"]},
+  "PAUSE": {"command":["pause"], "synonyms": ["pause"]},
+  "POWER ON": {"command":["power", "1"], "synonyms": ["(power|turn|switch)? on"]},
+  "POWER OFF": {"command":["power", "0"], "synonyms": ["(power|turn|switch)? off"]},
+  "VOLUME UP": {"command":["mixer","volume","+20"], "synonyms": ["(volume|turn) up"]},
+  "VOLUME DOWN": {"command":["mixer","volume","-20"], "synonyms": ["(volume|turn) down"]},
+  "SLEEP": {"command":["sleep","300"], "synonyms": ["sleep"]},
+  "SLEEP SONG": {"command":["jiveendoftracksleep"], "synonyms": ["sleep (at end of )?song"]},
+  "SKIP": {"command":["playlist","index","+1"], "synonyms": ["(skip|next)( song)?"]},
+  "PREVIOUS": {"command":["playlist","index","-1"], "synonyms": ["(last|previous) song", "go back"]},
+  "UNSYNC": {"command":["sync","-"], "synonyms": ["unsynchronise", "unsynchronize", "unsync"]},
+  "SHUFFLE OFF": {"command":["playlist","shuffle",0], "synonyms": ["shuffle off", "stop shuffle"]},
+  "SHUFFLE SONGS": {"command":["playlist","shuffle",1], "synonyms": ["shuffle (on|songs)?",]},
+  "SHUFFLE ALBUMS": {"command":["playlist","shuffle",2], "synonyms": ["shuffle albums"]},
+  "REPEAT OFF": {"command":["playlist","repeat",0], "synonyms": ["repeat off", "stop repeat"]},
+  "REPEAT SONG": {"command":["playlist","repeat",1], "synonyms": ["repeat (on|song)"]},
+  "REPEAT PLAYLIST": {"command":["playlist","repeat",2], "synonyms": ["repeat playlist"]},
+  "MUTE": {"command":["mixer","volume","0"], "synonyms": ["mute", "shut up", "be quiet"]}
 } 
  
 search_types = {
@@ -111,9 +115,11 @@ class SqueezeBoxController:
       raise Exception("Command not specified")
 
     if details['command'] not in commands:
-      raise Exception("command must be one of: " + str(commands.keys()))
+      command = try_match(details['command'], commands)
+      if command is None:
+        raise Exception("command must be one of: " + str(commands.keys()))
 
-    self._make_request(self.player_macs[details['player']], commands[details['command']])
+    self._make_request(self.player_macs[details['player']], commands[command]['command'])
 
   @_cache_player
   def search_and_play(self, details):
