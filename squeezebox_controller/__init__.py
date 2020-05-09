@@ -295,15 +295,15 @@ class SqueezeBoxController:
     self._make_request(slave, commands["POWER ON"])
     self._make_request(master, commands["POWER ON"])
    
-  def add_custom_command(self, name, func, cached=True):
-    """Performs a simple query on a squeezebox 
+  def add_custom_command(self, name, func, player_details_cached=True):
+    """Set a function as a named custom command.
     
-    Performs one of the fixed queries on the specified squeezebox
+     Set a named custom command to be invoked with a called to ``custom_command``. The function will receive a helper object as specified and the possible runtime arguments.
 
     Args:
       name: ``string``,
       func: ``(helper_obj, details) -> Unit``,
-      cached: ``boolean`` - should the player field be cached
+      player_details_cached: ``boolean`` - if the input ``details`` is a dictionary, cache the value with key: ``player``
       
     helper_obj:
       Is an dictionary with the following contents...
@@ -315,7 +315,7 @@ class SqueezeBoxController:
       
     details: [optional] the parameter object to pass to the called custom function.
     """
-    if cached:
+    if player_details_cached:
       func = _cache_player_custom(self, func)
     self._custom_commands[name] = func
     

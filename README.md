@@ -4,7 +4,7 @@
 [![Build Status](https://travis-ci.com/samtherussell/squeezebox-controller.svg?branch=master)](https://travis-ci.com/samtherussell/squeezebox-controller)
 
 
-A python interface for controlling logitech squeezeboxes via the squeezebox server.
+A python 3 interface for controlling logitech squeezeboxes via the squeezebox server.
 
 The commands are sent over the JSON RPC interface to the local squeeze server.
 
