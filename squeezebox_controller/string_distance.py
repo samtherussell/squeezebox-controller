@@ -78,13 +78,10 @@ def try_match(input, options, threshold=5):
       for regex in option["synonyms"]:
         for text in enumerate_regex(regex.lower()):
           scores.append((key, dist(input, text.lower())))
-  print(sorted(scores, key=lambda x: x[1])) 
   best = min(scores, key=lambda x: x[1])
   if best[1] < threshold:
-    print(f"return {best}")
     return best[0]
   else:
-    print(f"return None")
     return None
 
 
