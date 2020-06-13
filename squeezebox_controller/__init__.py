@@ -10,17 +10,17 @@ class UserException(Exception):
 def _cache_player(f):
   @wraps(f)
   def cached_f(self, details, *args):
-    if (not self.cached_player == None) and ("player" not in details or details["player"] == ""):
+    if (not self.cached_player == None) and ("player" not in details or details["player"] == "" or details["player"] == None):
       details["player"] = self.cached_player
     else:
       self.cached_player = details['player']
     return f(self, details, *args)
   return cached_f
-  
+
 def _cache_player_custom(self, f):
   @wraps(f)
   def cached_f(helper, details, *args):
-    if (not self.cached_player == None) and ("player" not in details or details["player"] == ""):
+    if (not self.cached_player == None) and ("player" not in details or details["player"] == "" or details["player"] == None):
       details["player"] = self.cached_player
     else:
       self.cached_player = details['player']
@@ -62,8 +62,8 @@ commands = {
   "REPEAT SONG": {"command":["playlist","repeat",1], "synonyms": ["repeat (on|song)"]},
   "REPEAT PLAYLIST": {"command":["playlist","repeat",2], "synonyms": ["repeat playlist"]},
   "MUTE": {"command":["mixer","volume","0"], "synonyms": ["mute", "shut up", "be quiet"]}
-} 
- 
+}
+
 search_types = {
   "SONG": {"print": "song", "local_search":"tracks", "local_loop":"titles_loop", "local_name": "title", "local_play": "track_id"},
   "ALBUM": {"print": "album", "local_search":"albums", "local_loop":"albums_loop", "local_name": "album", "local_play": "album_id"},
@@ -79,11 +79,11 @@ queries = {
                       if 'artist' in info['playlist_loop'][0] else info['playlist_loop'][0]['title'] \
                       if 'playlist_loop' in info and len(info['playlist_loop']) > 0 else "Nothing is playing"
 }
- 
+
 class SqueezeBoxController:
 
   cached_player = None
-  
+
   def __init__(self, server_ip, server_port=9000, playername_cleanup_func=None, default_player = None, request_lib=requests):
     """
     Args:
@@ -103,7 +103,7 @@ class SqueezeBoxController:
   @_needs_player("player")
   def simple_command(self, details):
     """Sends a simple squeezebox commands
-    
+
     Sends one of the fixed commands to the specified squeezebox
 
     Args:
@@ -118,6 +118,8 @@ class SqueezeBoxController:
       command = try_match(details['command'], commands)
       if command is None:
         raise Exception("command must be one of: " + str(commands.keys()))
+    else:
+        command = details['command']
 
     self._make_request(self.player_macs[details['player']], commands[command]['command'])
 
@@ -169,11 +171,14 @@ class SqueezeBoxController:
 
     if details['term'] == "":
       raise UserException("Search term cannot be empty")
-      
+
     if details['type'] == "":
       specified_search_types = search_types.keys()
     elif details['type'] not in search_types:
-      raise Exception("Search type must be one of: " + str(search_types.keys()))
+      matching_type = try_match(details['type'], search_types)
+      if type is None:
+        raise Exception("Search type must be one of: " + str(search_types.keys()))
+      specified_search_types = [matching_type]
     else:
       specified_search_types = [details['type']]
 
@@ -189,7 +194,7 @@ class SqueezeBoxController:
       raise UserException("Nothing matching: " + details["term"])
 
     results.sort(key=lambda x: dist(x[0][search_types[x[1]]['local_name']], details["term"]))
-    
+
     entity,type_k = results[0]
     type = search_types[type_k]
     name = entity[type['local_name']]
@@ -201,7 +206,7 @@ class SqueezeBoxController:
   @_needs_player("player")
   def set_volume(self, details):
     """Sets volume at specified level
-    
+
     Sets the volume of the specified squeezebox at the specified level
 
     Args:
@@ -210,7 +215,7 @@ class SqueezeBoxController:
     """
     if "percent" not in details:
       raise Exception("Percentage not specified")
-    
+
     if type(details['percent']) == int:
       percent = details['percent']
     else:
@@ -218,17 +223,17 @@ class SqueezeBoxController:
         percent = int(details['percent'])
       except:
         raise Exception("Percentage must be a integer")
-        
+
     if percent < 0 or percent > 100:
       raise Exception("Percentage must be between 0 and 100")
-      
+
     self._make_request(self.player_macs[details['player']], ["mixer","volume",str(percent)])
 
   @_cache_player
   @_needs_player("player")
   def sleep_in(self, details):
     """Sleeps the player after a delay
-    
+
     Sets the specified squeezebox to sleep after the specified time
 
     Args:
@@ -245,10 +250,10 @@ class SqueezeBoxController:
         time = int(details['time'])
       except:
         raise Exception("Time must be a integer")
-        
+
     if time < 0:
       raise Exception("Time must be positive")
-      
+
     self._make_request(self.player_macs[details['player']], ["sleep",str(time*60)])
 
   @_cache_player
@@ -256,7 +261,7 @@ class SqueezeBoxController:
   @_needs_player("other")
   def send_music(self, details):
     """Sends music from one squeezebox to another
-    
+
     Sends whatever is playing on the source to the destination squeezebox
 
     Args:
@@ -274,7 +279,7 @@ class SqueezeBoxController:
       dest = self.player_macs[details['player']]
     else:
       raise Exception('direction must be either "from" or "to".')
-      
+
     self._make_request(self.player_macs[details['player']], ["switchplayer","from:" + source,"to:" + dest])
 
   @_cache_player
@@ -282,7 +287,7 @@ class SqueezeBoxController:
   @_needs_player("other")
   def sync_player(self, details):
     """Sends music from one squeezebox to another
-    
+
     Sends whatever is playing on the source to the destination squeezebox
 
     Args:
@@ -290,21 +295,21 @@ class SqueezeBoxController:
     """
     slave = self.player_macs[details['player']]
     master = self.player_macs[details['other']]
-      
+
     self._make_request(master, ["sync",slave])
     self._make_request(slave, commands["POWER ON"])
     self._make_request(master, commands["POWER ON"])
-   
+
   def add_custom_command(self, name, func, player_details_cached=True):
     """Set a function as a named custom command.
-    
+
      Set a named custom command to be invoked with a called to ``custom_command``. The function will receive a helper object as specified and the possible runtime arguments.
 
     Args:
       name: ``string``,
       func: ``(helper_obj, details) -> Unit``,
       player_details_cached: ``boolean`` - if the input ``details`` is a dictionary, cache the value with key: ``player``
-      
+
     helper_obj:
       Is an dictionary with the following contents...
       "make_request": ``(mac: string, command: [string]) -> Unit``,
@@ -312,23 +317,23 @@ class SqueezeBoxController:
       "requests": library object,
       "base_url": ``string``,
       "player_lookup": ``dict[string] -> string``
-      
+
     details: [optional] the parameter object to pass to the called custom function.
     """
     if player_details_cached:
       func = _cache_player_custom(self, func)
     self._custom_commands[name] = func
-    
+
   def custom_command(self, name, details=None):
     """Run named custom command
-    
+
     Args:
       name: ``string``
       details - passed to custom command
-    """  
+    """
     if name not in self._custom_commands:
       raise Exception("Custom Command not available")
-        
+
     helper = {
       "make_request": partial(self._make_request),
       "get_player_info": partial(self._get_player_info),
@@ -336,17 +341,17 @@ class SqueezeBoxController:
       "base_url": self.base_url,
       "player_lookup": self.player_macs
     }
-    
+
     if details == None:
       return self._custom_commands[name](helper)
     else:
       return self._custom_commands[name](helper, details)
-    
+
   @_cache_player
   @_needs_player("player")
   def simple_query(self, details):
-    """Performs a simple query on a squeezebox 
-    
+    """Performs a simple query on a squeezebox
+
     Performs one of the fixed queries on the specified squeezebox
 
     Args:
@@ -360,9 +365,9 @@ class SqueezeBoxController:
       raise Exception("Query must be one of: " + str(queries.keys()))
 
     player_info = self._get_player_info(self.player_macs[details['player']])
-    
+
     return queries[details['query']](player_info)
-    
+
 
   def _populate_player_macs(self, playername_cleanup=None):
     player_macs = {}
@@ -375,10 +380,10 @@ class SqueezeBoxController:
       player_macs[name] = player['playerid']
     player_macs["ALL"] = list(player_macs.values())
     return player_macs
-      
+
   def _get_player_info(self, player):
     return self._make_request(player, ["status","-"])["result"]
-    
+
   def _make_request(self, player, command):
     def handler(p):
       payload = {'method': 'slim.request', 'params': [p, command]}
@@ -391,5 +396,3 @@ class SqueezeBoxController:
       return handler(player)
     else:
       raise Exception("Player must be a MAC string or list of MAC strings")
-    
-    
