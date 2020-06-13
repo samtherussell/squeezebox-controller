@@ -98,7 +98,7 @@ def enumerate_regex(regex):
 
     end = r.find(')', start+1)
     if end == -1:
-      raise Exception(f"bad regex: {r}")
+      raise Exception("bad regex: {}".format(r))
 
     options = r[start+1:end].split('|')
     if end+1 < len(r) and r[end+1] == '?':
